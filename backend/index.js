@@ -61,4 +61,39 @@ app.post("/create-account", async(req,res)=>{
     });
 });
 
+app.post("/login",async (req,res)=>{
+    const {email,password} =req.body;
+
+    if(!email || !password){
+        return res.status(400).json({error:true,message:"Email & Password both are required"});
+    }
+
+    const user=await User.findOne({email});
+
+    if(!user){
+        return res.status(400).json({error:true,message:"No User Found"});
+    }
+
+    const isPassword=await bcrypt.compare(password,user.password);
+
+    if(!isPassword){
+        return res.status(400).json({error:true,message:"Wrong Password"});
+    }
+
+    const accessToken=jwt.sign(
+        {userId:User._id},
+        ENV.ACCESS_TOKEN_KEY,
+        {
+            expiresIn:"72hr"
+        }
+    );
+
+    return res.json({
+        error:false,
+        user:{username:User.fullname,email:User.email},
+        accessToken,
+        message:"Login Successfull"
+    });
+});
+
 app.listen(ENV.PORT);
