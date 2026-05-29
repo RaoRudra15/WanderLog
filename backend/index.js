@@ -6,12 +6,14 @@ import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 
+import {User} from './models/user.model.js';
 
-mongoose.connect(ENV.DB_URL).then((=>{
+mongoose.connect(ENV.DB_URL).then(()=>{
     console.log("Connected to MongoDB");
-})).catch((err)=>{
+}).catch((err)=>{
     console.log("Error connecting to MongoDB", err);
 });
+
 
 
 const app=express();
