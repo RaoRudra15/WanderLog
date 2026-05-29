@@ -7,6 +7,7 @@ import cors from 'cors';
 import jwt from 'jsonwebtoken';
 
 import {User} from './models/user.model.js';
+import authenticateToken from './utilities.js';
 
 mongoose.connect(ENV.DB_URL).then(()=>{
     console.log("Connected to MongoDB");
@@ -19,7 +20,7 @@ const app=express();
 app.use(express.json());
 app.use(cors({origin:"*"}));
 
-app.post("/create-account", async(req,res)=>{
+app.post("/create-account", async (req,res)=>{
     const {fullname,email,password}=req.body;
 
     if(!fullname || !email || !password){
@@ -95,5 +96,19 @@ app.post("/login",async (req,res)=>{
         message:"Login Successfull"
     });
 });
+
+app.get("/get-user", authenticateToken, async (req,res)=>{
+    
+    const {userId} =req.user;
+
+    const isUser = await User.findOne({_id:userId});
+
+    if(!isUser) return res.sendStatus(401);
+
+    return res.json({
+        user:isUser,
+        message:""
+    });
+})
 
 app.listen(ENV.PORT);
