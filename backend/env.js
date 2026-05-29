@@ -10,5 +10,7 @@ dotenv.config();
  
 export const ENV={
     DB_URL:process.env.DB_URL,
-    NODE_ENV:process.env.NODE_ENV
+    NODE_ENV:process.env.NODE_ENV,
+    PORT:process.env.PORT,
+    ACCESS_TOKEN_KEY:process.env.ACCESS_TOKEN_KEY
 }

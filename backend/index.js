@@ -15,13 +15,50 @@ mongoose.connect(ENV.DB_URL).then(()=>{
 });
 
 
-
 const app=express();
 app.use(express.json());
 app.use(cors({origin:"*"}));
 
-app.get("/create-account", async(req,res)=>{
-    
-})
+app.post("/create-account", async(req,res)=>{
+    const {fullname,email,password}=req.body;
+
+    if(!fullname || !email || !password){
+        return res.status(400).json({error:true, message:"All Fields are Required"});
+    }
+
+    const isUser=await User.findOne({email});
+
+    if(isUser){
+        return res.status(400).json({error:true, message:"User already Exists"});
+    }
+
+    const hashedPassword=await bcrypt.hash(password,10);
+
+    const user=new User({
+        fullname,
+        email,
+        password:hashedPassword
+    });
+
+    await user.save();
+
+    const accessToken=jwt.sign(
+        {
+            userId:user._id
+        },
+        ENV.ACCESS_TOKEN_KEY,
+        {
+            expiresIn:"72h"
+        }
+    );
+
+    return res.status(201).json({
+        error:false,
+        user:{fullname:user.fullname,
+        email:user.email},
+        accessToken,
+        message:"Registration Successfull"
+    });
+});
 
 app.listen(ENV.PORT);
