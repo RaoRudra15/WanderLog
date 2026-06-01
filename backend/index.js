@@ -6,8 +6,11 @@ import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 
-import {User} from './models/user.model.js';
 import authenticateToken from './utilities.js';
+
+import {User} from './models/user.model.js';
+import { TravelStory } from './models/travelStory.model.js';
+
 
 mongoose.connect(ENV.DB_URL).then(()=>{
     console.log("Connected to MongoDB");
@@ -82,16 +85,16 @@ app.post("/login",async (req,res)=>{
     }
 
     const accessToken=jwt.sign(
-        {userId:User._id},
+        {userId:user._id},
         ENV.ACCESS_TOKEN_KEY,
         {
-            expiresIn:"72hr"
+            expiresIn:"72h"
         }
     );
 
     return res.json({
         error:false,
-        user:{username:User.fullname,email:User.email},
+        user:{fullname:user.fullname,email:user.email},
         accessToken,
         message:"Login Successfull"
     });
@@ -109,6 +112,37 @@ app.get("/get-user", authenticateToken, async (req,res)=>{
         user:isUser,
         message:""
     });
-})
+});
+
+app.post("/add-travel-story",authenticateToken, async (req,res)=>{
+
+    const {title,story,visitedLocation,imageUrl,visitedDate}=req.body;
+    const {userId}=req.user;
+
+    if(!title || !story || !visitedLocation || !visitedDate || !imageUrl){
+        return res.status(400).json({error:true, message:"All fields are required"});
+    }
+
+    const parsedVisitedDate=new Date(parseInt(visitedDate));
+
+    try{
+        const travelStory=new TravelStory({
+            title,
+            story,
+            visitedLocation,
+            userId,
+            imageUrl,
+            visitedDate:parsedVisitedDate
+        })
+
+        await travelStory.save();
+
+        res.status(201).json({story:travelStory,message:"Story Added Successfully"});
+    }catch(error){
+        res.status(400).json({error:true, message: error.message});
+    }
+});
+
+
 
 app.listen(ENV.PORT);
