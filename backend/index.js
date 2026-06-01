@@ -6,6 +6,10 @@ import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 
+import upload from './multer.js';
+import fs from 'fs';
+import path from 'path';
+
 import authenticateToken from './utilities.js';
 
 import {User} from './models/user.model.js';
@@ -155,6 +159,23 @@ app.get("/get-all-stories", authenticateToken, async (req,res)=>{
         return res.status(500).json({error:true, message:error.message});
     }
 })
+
+app.post("/image-upload",upload.single("image"), async (req,res)=>{
+    try{
+        if(!req.file){
+            return res.status(400).json({error:true,message:"No image uploaded"});
+        }
+
+        const imageUrl=`https://musical-journey-5gvx4497rxr4c5wg-8000.app.github.dev/uploads/${req.file.filename}`;
+        res.status(201).json({imageUrl});
+
+    }catch(error){
+        return res.status(500).json({error:true,message:error.message});
+    }
+}  )
+
+app.use("/uploads", express.static("uploads"));
+
 
 
 
