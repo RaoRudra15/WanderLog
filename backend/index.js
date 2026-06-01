@@ -143,6 +143,19 @@ app.post("/add-travel-story",authenticateToken, async (req,res)=>{
     }
 });
 
+app.get("/get-all-stories", authenticateToken, async (req,res)=>{
+    const {userId} = req.user;
+
+    try{
+        const travelStory=await TravelStory.find({userId:userId}).sort({isFavourite:-1});
+
+        res.status(200).json({stories:travelStory});
+
+    }catch(error){
+        return res.status(500).json({error:true, message:error.message});
+    }
+})
+
 
 
 app.listen(ENV.PORT);
