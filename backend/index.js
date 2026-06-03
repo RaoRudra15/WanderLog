@@ -164,7 +164,7 @@ app.delete("/delete-image",async (req,res)=>{
 
 app.post("/add-travel-story",authenticateToken, async (req,res)=>{
 
-    const {title,story,visitedLocation,imageUrl,visitedDate}=req.body;
+    const {title,story,visitedLocation,imageUrl,visitedDate}=req.body; 
     const {userId}=req.user;
 
     if(!title || !story || !visitedLocation || !visitedDate || !imageUrl){
@@ -236,6 +236,32 @@ app.post("/edit-travel-story/:id",authenticateToken, async (req,res)=>{
     }
 });
 
+app.delete("/delete-story/:id", authenticateToken, async (req,res)=>{
+    const {id} = req.params;
+    const {userId} = req.user;
+
+    try{
+        const travelStory = await TravelStory.findOne({_id:id,userId:userId});
+
+        if(!travelStory) return res.status(404).json({error:true,message:"No travel story found"});
+
+        const imageUrl=travelStory.imageUrl;
+        const filename=path.basename(imageUrl);
+        const filepath=`uploads/${filename}`;
+
+        await travelStory.deleteOne({_id:id,userId:userId});
+
+
+        if(fs.existsSync(filepath)){
+            fs.unlinkSync(filepath);
+            
+        }
+
+        return res.status(200).json({error:false,message:"Story deleted"});
+    }catch(error){
+        return res.status(500).json({error:true,message:error.message});
+    }
+});
 
 
 
