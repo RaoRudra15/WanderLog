@@ -311,4 +311,25 @@ app.get("/search", authenticateToken, async (req,res)=>{
     }
 });
 
+app.get("/travel-stories/filter", authenticateToken,async (req,res)=>{
+    const {startDate,lastDate} = req.query;
+    const {userId} = req.user;
+
+    if(!startDate || !lastDate) return res.status(404).json({error:true,message:"All fields are required"});
+
+    const start = new Date(parseInt(startDate));
+    const last  = new Date(parseInt(lastDate));
+
+    try{
+        const filteredStories=await TravelStory.find({
+            userId:userId,
+            visitedDate:{$gte:start, $lte:last}
+        }).sort({isFavourite:-1});
+
+        return res.status(200).json({stories:filteredStories});
+    }catch(error){
+        return res.status(500).json({error:true,message:error.message});
+    }
+});
+
 app.listen(ENV.PORT);
