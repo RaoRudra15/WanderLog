@@ -27,6 +27,9 @@ const app=express();
 app.use(express.json());
 app.use(cors({origin:"*"}));
 
+app.use("/uploads", express.static("uploads"));
+app.use("/assets", express.static("assets"));
+
 app.post("/create-account", async (req,res)=>{
     const {fullname,email,password}=req.body;
 
@@ -118,6 +121,47 @@ app.get("/get-user", authenticateToken, async (req,res)=>{
     });
 });
 
+
+
+app.post("/image-upload",upload.single("image"), async (req,res)=>{
+    try{
+        if(!req.file){
+            return res.status(400).json({error:true,message:"No image uploaded"});
+        }
+
+        const imageUrl=`https://musical-journey-5gvx4497rxr4c5wg-8000.app.github.dev/uploads/${req.file.filename}`;
+        res.status(201).json({imageUrl});
+
+    }catch(error){
+        return res.status(500).json({error:true,message:error.message});
+    }
+})
+
+app.delete("/delete-image",async (req,res)=>{
+
+    const {imageUrl} =req.query;
+
+    if(!imageUrl) return res.status(400).json({error:true,message:"imageUrl is required in parameter"});
+
+    try{
+        const filename=path.basename(imageUrl);
+        const filepath=`uploads/${filename}`;
+
+        if(fs.existsSync(filepath)){
+            fs.unlinkSync(filepath);
+            return res.status(200).json({error:false,message:"Image Deleted"});
+        }else{
+            return res.status(200).json({error:true,message:"Image doesnt Exist"})
+        }
+    }catch(error){
+        return res.status(500).json({error:true,message:error.message});
+    }
+})
+
+
+
+
+
 app.post("/add-travel-story",authenticateToken, async (req,res)=>{
 
     const {title,story,visitedLocation,imageUrl,visitedDate}=req.body;
@@ -158,44 +202,43 @@ app.get("/get-all-stories", authenticateToken, async (req,res)=>{
     }catch(error){
         return res.status(500).json({error:true, message:error.message});
     }
-})
+});
 
-app.post("/image-upload",upload.single("image"), async (req,res)=>{
+app.post("/edit-travel-story/:id",authenticateToken, async (req,res)=>{
+    const {id} = req.params;
+    const {userId} =req.user;
+    const {title,story,visitedLocation,imageUrl,visitedDate} =req.body;
+
+    if(!title || !story || !visitedLocation || !visitedDate || !imageUrl){
+        return res.status(400).json({error:true,message:"All fields are required"});
+    }
+
+    const parsedVisitedDate=new Date(parseInt(visitedDate));
+
     try{
-        if(!req.file){
-            return res.status(400).json({error:true,message:"No image uploaded"});
-        }
+        const travelStory=await TravelStory.findOne({_id:id,userId:userId});
 
-        const imageUrl=`https://musical-journey-5gvx4497rxr4c5wg-8000.app.github.dev/uploads/${req.file.filename}`;
-        res.status(201).json({imageUrl});
+        if(!travelStory) return res.status(404).json({error:true,message:'No travel story found'});
+        
+        const placeholderUrl="https://musical-journey-5gvx4497rxr4c5wg-8000.app.github.dev/assets/placeholder.png";
 
+        travelStory.title=title;
+        travelStory.story=story;
+        travelStory.visitedLocation=visitedLocation;
+        travelStory.imageUrl=imageUrl || placeholderUrl;
+        travelStory.visitedDate=parsedVisitedDate;
+
+        await travelStory.save();
+
+        return res.status(200).json({story:travelStory,message:"Update successfull"});
     }catch(error){
         return res.status(500).json({error:true,message:error.message});
     }
-}  )
+});
 
-app.delete("/delete-image",async (req,res)=>{
 
-    const {imageUrl} =req.query;
 
-    if(!imageUrl) return res.status(400).json({error:true,message:"imageUrl is required in parameter"});
 
-    try{
-        const filename=path.basename(imageUrl);
-        const filepath=`uploads/${filename}`;
-
-        if(fs.existsSync(filepath)){
-            fs.unlinkSync(filepath);
-            return res.status(200).json({error:false,message:"Image Deleted"});
-        }else{
-            return res.status(200).json({error:true,message:"Image doesnt Exist"})
-        }
-    }catch(error){
-        return res.status(500).json({error:true,message:error.message});
-    }
-})
-
-app.use("/uploads", express.static("uploads"));
 
 
 app.listen(ENV.PORT);
