@@ -174,9 +174,28 @@ app.post("/image-upload",upload.single("image"), async (req,res)=>{
     }
 }  )
 
+app.delete("/delete-image",async (req,res)=>{
+
+    const {imageUrl} =req.query;
+
+    if(!imageUrl) return res.status(400).json({error:true,message:"imageUrl is required in parameter"});
+
+    try{
+        const filename=path.basename(imageUrl);
+        const filepath=`uploads/${filename}`;
+
+        if(fs.existsSync(filepath)){
+            fs.unlinkSync(filepath);
+            return res.status(200).json({error:false,message:"Image Deleted"});
+        }else{
+            return res.status(200).json({error:true,message:"Image doesnt Exist"})
+        }
+    }catch(error){
+        return res.status(500).json({error:true,message:error.message});
+    }
+})
+
 app.use("/uploads", express.static("uploads"));
-
-
 
 
 app.listen(ENV.PORT);
