@@ -286,7 +286,29 @@ app.put("/update-is-favourite/:id", authenticateToken, async (req,res)=>{
         
 });
 
+app.get("/search", authenticateToken, async (req,res)=>{
 
+    const {query} = req.query;
+    const {userId} =req.user;
 
+    if(!query) return res.status(400).json({error:true,message:"Query is required"});
+
+    try{
+        const searchResult = await TravelStory.find({
+            userId:userId,
+            $or: [
+                {title : {$regex :query, $options:"i"}},
+                {story : {$regex :query, $options:"i"}},
+                {visitedLocation : {$regex :query, $options:"i"}},
+
+            ]
+        }).sort({isFavourite:-1});
+        
+        return res.status(200).json({stories:searchResult,message:"Story found"});
+
+    }catch(error){
+        return res.status(500).json({error:true,message:error.message});
+    }
+});
 
 app.listen(ENV.PORT);
