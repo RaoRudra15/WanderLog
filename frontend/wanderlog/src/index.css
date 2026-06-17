@@ -3,8 +3,8 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #ff5733;
-  --color-secondary: #222222;
+  --color-primary:#05B6D3;
+     --color-secondary:#EF863E;
 }
 
 @layer base{
@@ -15,4 +15,42 @@
         background-color: #fdfeff;
         overflow-x: hidden;
     }
+}
+
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
+/* .login-bg-img {
+    background-image: url("/src/assets/images/bg-image.png");
+} */
+
+@layer components {
+  .bg-login-bg-img {
+    background-image: url("./assets/images/bg-image.png");
+    background-size: cover;
+    background-position: center;
+  }
+
+  .signup-bg-img {
+    background-image: url("./assets/images/signup-bg-img.png");
+  }
+
+  .input-box  {
+    @apply w-full text-sm bg-cyan-600/5 rounded px-5 py-3 mb-4 outline-none;
+  }
+
+  .btn-primary {
+    @apply w-full text-sm font-medium text-white bg-cyan-500 shadow-lg shadow-cyan-200/50 p-[10px] rounded-full my-1 hover:bg-cyan-100 hover:text-primary;
+  }
+
+  .btn-light {
+    @apply bg-cyan-50 text-primary shadow-cyan-100/0 border border-cyan-100 hover:bg-primary hover:text-white;
+  }
+
+  .login-ui-box {
+    @apply w-80 h-[450px] rounded-full bg-primary absolute rotate-45;
+  }
+
 }
