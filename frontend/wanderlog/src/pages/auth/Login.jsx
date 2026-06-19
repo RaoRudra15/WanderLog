@@ -89,7 +89,7 @@ const Login = () => {
             </button>
             <p className="text-xs text text-center text-slate-500 my-4">Or</p>
             <button
-              type="submit"
+              type="button"
               className="btn-primary btn-light"
               onClick={() => {
                 navigate("/signUp");
