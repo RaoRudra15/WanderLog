@@ -1,1 +1,1 @@
-export const BASE_URL = "http://localhost:8000";
+export const BASE_URL = "https://musical-journey-5gvx4497rxr4c5wg-8000.app.github.dev/";

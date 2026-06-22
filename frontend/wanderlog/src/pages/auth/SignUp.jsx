@@ -31,7 +31,7 @@ const SignUp = () => {
     // SignUp API call
     try {
       const response = await axiosInstance.post("/create-account", {
-        fullName: name,
+        fullname: name,
         email: email,
         password: password,
       });
@@ -106,7 +106,7 @@ const SignUp = () => {
             </button>
             <p className="text-xs text text-center text-slate-500 my-4">Or</p>
             <button
-              type="submit"
+              type="button"
               className="btn-primary btn-light"
               onClick={() => {
                 navigate("/login");
